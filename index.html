@@ -1,168 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>DELHI PRIVATE SCHOOL, SHARJAH - WS-2000 Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Smart Weather App</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
-
-  <!-- Styling -->
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      background: #0f172a;
+      color: #e5e7eb;
     }
 
-    .app {
-      background: #020617;
-      width: 100%;
-      max-width: 380px;
-      border-radius: 18px;
+    header {
       padding: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      text-align: center;
+      background: #020617;
+      font-size: 1.8rem;
+      color: #38bdf8;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-      font-size: 1.6rem;
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 30px;
     }
 
     .card {
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 12px;
-      margin-top: 12px;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
-      font-size: 1rem;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
     }
 
     .label {
+      font-size: 0.9rem;
       opacity: 0.7;
     }
 
-    button {
-      width: 100%;
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: #22c55e;
-      color: black;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    #installBtn {
-      display: none;
-      background: #38bdf8;
+    .value {
+      margin-top: 10px;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #22d3ee;
     }
 
     footer {
       text-align: center;
-      margin-top: 15px;
       font-size: 0.8rem;
       opacity: 0.6;
+      padding-bottom: 20px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="app">
-    <h1>🌬 Smart Weather</h1>
+<header>
+  🌦 DELHI PRIVATE SCHOOL, SHARJAH<br>
+  WS-2000 Live Weather Dashboard
+</header>
 
-    <div class="card">
-      <div class="row">
-        <span class="label">Wind Speed</span>
-        <span id="windSpeed">-- km/h</span>
-      </div>
-      <div class="row">
-        <span class="label">Wind Direction</span>
-        <span id="windDir">--</span>
-      </div>
-    </div>
-
-    <button onclick="getWeather()">Refresh Data</button>
-    <button id="installBtn">📲 Install App</button>
-
-    <footer>
-      PWA • Mobile Ready • Offline Enabled
-    </footer>
+<div class="dashboard">
+  <div class="card">
+    <div class="label">Temperature</div>
+    <div class="value" id="temp">-- °C</div>
   </div>
 
-  <!-- Service Worker -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
+  <div class="card">
+    <div class="label">Humidity</div>
+    <div class="value" id="humidity">-- %</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Wind Speed</div>
+    <div class="value" id="wind">-- m/s</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Pressure</div>
+    <div class="value" id="pressure">-- hPa</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Rain (Today)</div>
+    <div class="value" id="rain">-- mm</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Device Last Reading</div>
+    <div class="value" id="deviceTime">--</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Dashboard Fetch Time</div>
+    <div class="value" id="time">--</div>
+  </div>
+
+  <div class="card">
+    <div class="label">Current Time</div>
+    <div class="value" id="currentTime">--:--:--</div>
+  </div>
+</div>
+
+<footer>
+  Data Source: AmbientWeather.net
+</footer>
+
+<script>
+  // ===============================
+  // 🔑 AMBIENT WEATHER SETTINGS
+  // ===============================
+  const API_KEY = "72584bc3dbea469daa22b84b36dda106efbf205dd5d0437f841e1ca52b987aa0";
+  const APPLICATION_KEY = "e3d981ee7f0f459babc2bc9ae411211ef60c7d337a8f4a6a84ca5e3d104ec411";
+  const MAC_ADDRESS = "C8:C9:A3:26:48:B4";
+
+  const URL = `https://api.ambientweather.net/v1/devices?applicationKey=${APPLICATION_KEY}&apiKey=${API_KEY}`;
+
+  // ===============================
+  // 🌦 WEATHER DATA FETCH
+  // ===============================
+  async function loadWeather() {
+    try {
+      const response = await fetch(URL);
+      const data = await response.json();
+
+      const device = data.find(dev => dev.macAddress === MAC_ADDRESS);
+      if (!device) throw new Error("Device not found!");
+
+      const d = device.lastData;
+
+      // Temperature (F → C)
+      document.getElementById("temp").innerText =
+        ((d.tempf - 32) * 5 / 9).toFixed(1) + " °C";
+
+      // Humidity
+      document.getElementById("humidity").innerText = d.humidity + " %";
+
+      // Wind speed (mph → m/s)
+      document.getElementById("wind").innerText =
+        (d.windspeedmph * 0.447).toFixed(1) + " m/s";
+
+      // Pressure (hPa)
+      document.getElementById("pressure").innerText = d.baromrelin + " hPa";
+
+      // Rain today (in → mm)
+      document.getElementById("rain").innerText =
+        (d.dailyrainin * 25.4).toFixed(1) + " mm";
+
+      // Device last reading (from WS-2000)
+      document.getElementById("deviceTime").innerText =
+        new Date(d.dateutc).toLocaleString('en-GB');
+
+      // Dashboard fetch time (current browser time)
+      document.getElementById("time").innerText =
+        new Date().toLocaleString('en-GB');
+
+    } catch (err) {
+      console.error("Error fetching weather data:", err);
     }
-  </script>
+  }
 
-  <!-- Install Prompt -->
-  <script>
-    let deferredPrompt;
-    const installBtn = document.getElementById("installBtn");
+  // Initial fetch
+  loadWeather();
 
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = "block";
-    });
+  // Refresh weather every 60 seconds
+  setInterval(loadWeather, 60000);
 
-    installBtn.addEventListener("click", async () => {
-      installBtn.style.display = "none";
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    });
-  </script>
+  // ===============================
+  // ⏰ LIVE CLOCK (updates every second)
+  // ===============================
+  function updateCurrentTime() {
+    const now = new Date();
+    const options = {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    };
+    document.getElementById("currentTime").innerText = now.toLocaleString('en-GB', options);
+  }
 
-  <!-- Weather Logic -->
-  <script>
-    function degreesToDirection(deg) {
-      const directions = [
-        "N", "NNE", "NE", "ENE",
-        "E", "ESE", "SE", "SSE",
-        "S", "SSW", "SW", "WSW",
-        "W", "WNW", "NW", "NNW"
-      ];
-      return directions[Math.round(deg / 22.5) % 16];
-    }
+  updateCurrentTime();
+  setInterval(updateCurrentTime, 1000);
 
-    function getWeather() {
-      // SAMPLE DATA (replace with real API or sensor)
-      const windSpeed = (Math.random() * 20 + 5).toFixed(1);
-      const windDeg = Math.floor(Math.random() * 360);
-
-      document.getElementById("windSpeed").textContent =
-        windSpeed + " km/h";
-
-      document.getElementById("windDir").textContent =
-        degreesToDirection(windDeg) + " (" + windDeg + "°)";
-    }
-
-    // Auto load once
-    getWeather();
-  </script>
+</script>
 
 </body>
 </html>

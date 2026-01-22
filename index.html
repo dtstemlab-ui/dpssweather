@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DELHI PRIVATE SCHOOL - WS-2000 Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+<style>
+/* --- YOUR EXISTING STYLES (UNCHANGED) --- */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+}
+header {
+  padding: 15px;
+  text-align: center;
+  background: #020617;
+  font-size: 1.8rem;
+  color: #38bdf8;
+  font-weight: bold;
+}
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+.card {
+  background: linear-gradient(145deg, #1e293b, #111827);
+  padding: 15px 10px;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+}
+.label {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #22d3ee;
+}
+#refreshBtn {
+  margin: 20px auto;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 12px;
+  background: #38bdf8;
+  color: #0f172a;
+  border: none;
+}
+footer {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.6;
+  padding-bottom: 15px;
+}
+.compass-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 10px auto 0;
+}
+.compass-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px solid #22d3ee;
+}
+.arrow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  font-size: 1.5rem;
+  color: #facc15;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+🌦 DELHI PRIVATE SCHOOL, SHARJAH<br>
+WS-2000 Live Weather Dashboard
+</header>
+
+<div class="dashboard">
+  <div class="card"><div class="label"><i class="fas fa-thermometer-half"></i> Temp</div><div class="value" id="temp">-- °C</div></div>
+  <div class="card"><div class="label"><i class="fas fa-tint"></i> Humidity</div><div class="value" id="humidity">-- %</div></div>
+  <div class="card"><div class="label"><i class="fas fa-wind"></i> Wind</div><div class="value" id="wind">-- m/s</div></div>
+
+  <div class="card">
+    <div class="label"><i class="fas fa-location-arrow"></i> Direction</div>
+    <div class="value" id="windDir">--</div>
+    <div class="compass-container">
+      <div class="compass-circle"></div>
+      <i class="fas fa-arrow-up arrow" id="windArrow"></i>
+    </div>
+  </div>
+
+  <div class="card"><div class="label">Pressure</div><div class="value" id="pressure">-- hPa</div></div>
+  <div class="card"><div class="label">Rain Today</div><div class="value" id="rain">-- mm</div></div>
+  <div class="card"><div class="label">Device Time</div><div class="value" id="deviceTime">--</div></div>
+  <div class="card"><div class="label">Updated</div><div class="value" id="time">--</div></div>
+</div>
+
+<div style="text-align:center;">
+  <button id="refreshBtn">🔄 Refresh</button>
+</div>
+
+<footer>Data Source: AmbientWeather.net</footer>
+
+<script>
+const API_KEY = "72584bc3dbea469daa22b84b36dda106efbf205dd5d0437f841e1ca52b987aa0";
+const APPLICATION_KEY = "e3d981ee7f0f459babc2bc9ae411211ef60c7d337a8f4a6a84ca5e3d104ec411";
+const MAC = "C8:C9:A3:26:48:B4";
+const URL = `https://api.ambientweather.net/v1/devices?applicationKey=${APPLICATION_KEY}&apiKey=${API_KEY}`;
+
+function degToCompass(d){return["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"][Math.round(d/22.5)%16];}
+
+async function loadWeather(){
+  const r=await fetch(URL); const data=await r.json();
+  const dev=data.find(d=>d.macAddress===MAC); if(!dev)return;
+  const d=dev.lastData;
+  temp.innerText=((d.tempf-32)*5/9).toFixed(1)+" °C";
+  humidity.innerText=d.humidity+" %";
+  wind.innerText=(d.windspeedmph*0.447).toFixed(1)+" m/s";
+  pressure.innerText=d.baromrelin+" hPa";
+  rain.innerText=(d.dailyrainin*25.4).toFixed(1)+" mm";
+  deviceTime.innerText=new Date(d.dateutc).toLocaleString("en-GB");
+  time.innerText=new Date().toLocaleString("en-GB");
+  windDir.innerText=`${degToCompass(d.winddir)} (${d.winddir}°)`;
+  windArrow.style.transform=`rotate(${d.winddir}deg)`;
+}
+
+loadWeather();
+setInterval(loadWeather,60000);
+refreshBtn.onclick=loadWeather;
+</script>
+
+</body>
+</html>

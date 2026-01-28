@@ -6,53 +6,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #020617;
+      color: #ffffff;
+      min-height: 100vh;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     header {
+      width: 100%;
       padding: 20px;
       text-align: center;
       background: #020617;
       font-size: 1.8rem;
-      color: #38bdf8;
+      font-weight: bold;
+      color: #ffffff;
+      border-bottom: 1px solid #334155;
     }
 
     .dashboard {
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      padding: 30px;
+      gap: 24px;
+
+      padding: 40px;
+      align-content: center;
     }
 
     .card {
       background: #1e293b;
-      padding: 20px;
-      border-radius: 15px;
+      padding: 25px;
+      border-radius: 16px;
       text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
     }
 
     .label {
-      font-size: 0.9rem;
-      opacity: 0.7;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      opacity: 0.85;
     }
 
     .value {
-      margin-top: 10px;
-      font-size: 2.2rem;
-      font-weight: bold;
-      color: #22d3ee;
+      margin-top: 12px;
+      font-size: 2.3rem;
+      font-weight: 700;
+      color: #ffffff;
     }
 
     footer {
+      width: 100%;
       text-align: center;
-      font-size: 0.8rem;
-      opacity: 0.6;
-      padding-bottom: 20px;
+      font-size: 0.85rem;
+      color: #ffffff;
+      opacity: 0.7;
+      padding: 15px 0 20px;
     }
   </style>
 </head>
@@ -102,7 +124,7 @@
 
   <div class="card">
     <div class="label">Current Time</div>
-    <div class="value" id="currentTime">--:--:--</div>
+    <div class="value" id="currentTime">--</div>
   </div>
 </div>
 
@@ -129,66 +151,49 @@
       const data = await response.json();
 
       const device = data.find(dev => dev.macAddress === MAC_ADDRESS);
-      if (!device) throw new Error("Device not found!");
+      if (!device) throw new Error("Device not found");
 
       const d = device.lastData;
 
-      // Temperature (F → C)
       document.getElementById("temp").innerText =
         ((d.tempf - 32) * 5 / 9).toFixed(1) + " °C";
 
-      // Humidity
-      document.getElementById("humidity").innerText = d.humidity + " %";
+      document.getElementById("humidity").innerText =
+        d.humidity + " %";
 
-      // Wind speed (mph → m/s)
       document.getElementById("wind").innerText =
         (d.windspeedmph * 0.447).toFixed(1) + " m/s";
 
-      // Pressure (hPa)
-      document.getElementById("pressure").innerText = d.baromrelin + " hPa";
+      document.getElementById("pressure").innerText =
+        d.baromrelin + " hPa";
 
-      // Rain today (in → mm)
       document.getElementById("rain").innerText =
         (d.dailyrainin * 25.4).toFixed(1) + " mm";
 
-      // Device last reading (from WS-2000)
       document.getElementById("deviceTime").innerText =
         new Date(d.dateutc).toLocaleString('en-GB');
 
-      // Dashboard fetch time (current browser time)
       document.getElementById("time").innerText =
         new Date().toLocaleString('en-GB');
 
     } catch (err) {
-      console.error("Error fetching weather data:", err);
+      console.error("Weather fetch error:", err);
     }
   }
 
-  // Initial fetch
   loadWeather();
-
-  // Refresh weather every 60 seconds
   setInterval(loadWeather, 60000);
 
   // ===============================
-  // ⏰ LIVE CLOCK (updates every second)
+  // ⏰ LIVE CLOCK
   // ===============================
   function updateCurrentTime() {
-    const now = new Date();
-    const options = {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    };
-    document.getElementById("currentTime").innerText = now.toLocaleString('en-GB', options);
+    document.getElementById("currentTime").innerText =
+      new Date().toLocaleString('en-GB');
   }
 
   updateCurrentTime();
   setInterval(updateCurrentTime, 1000);
-
 </script>
 
 </body>

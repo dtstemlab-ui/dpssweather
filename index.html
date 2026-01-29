@@ -13,8 +13,8 @@
     body {
       margin: 0;
       font-family: "Segoe UI", Arial, sans-serif;
-      background: #020617;
-      color: #ffffff;
+      background: #f8fafc;     /* ROYAL WHITE BACKGROUND */
+      color: #0f172a;
       min-height: 100vh;
 
       display: flex;
@@ -26,36 +26,37 @@
 
     header {
       width: 100%;
-      padding: 18px 30px;
-      background: #020617;
-      border-bottom: 1px solid #334155;
+      padding: 30px 40px;
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0;
 
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 25px;
+      gap: 35px;
     }
 
     .logo {
-      height: 100px;      /* BIGGER LOGO */
+      height: 150px;   /* BIGGER LOGO */
       width: auto;
-      object-fit: contain;
     }
 
     .header-text {
       text-align: center;
-      line-height: 1.2;
+      line-height: 1.25;
     }
 
     .header-text .title {
-      font-size: 2rem;
-      font-weight: 800;
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: 1px;
     }
 
     .header-text .subtitle {
-      font-size: 1.25rem;
-      font-weight: 500;
-      opacity: 0.85;
+      font-size: 1.8rem;   /* CLEAR FROM TOP SCREEN */
+      font-weight: 600;
+      color: #334155;
+      margin-top: 6px;
     }
 
     /* ================= DASHBOARD ================= */
@@ -63,38 +64,38 @@
     .dashboard {
       flex: 1;
       width: 100%;
-      max-width: 1200px;
+      max-width: 1300px;
 
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 28px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 30px;
 
-      padding: 40px;
+      padding: 45px;
       align-content: center;
     }
 
     .card {
-      background: #1e293b;
-      padding: 28px 20px;
-      border-radius: 16px;
+      background: #1e293b;   /* 🔥 TILE COLOR UNCHANGED */
+      padding: 32px 22px;
+      border-radius: 18px;
       text-align: center;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
     }
 
-    /* ===== LABEL = HEADING ===== */
     .label {
-      font-size: 1.9rem;
+      font-size: 1.8rem;
       font-weight: 700;
-      letter-spacing: 1px;
       text-transform: uppercase;
-      opacity: 0.8;
-      margin-bottom: 10px;
+      letter-spacing: 1px;
+      color: #e5e7eb;       /* SAME FONT COLOR */
+      margin-bottom: 12px;
+      opacity: 0.85;
     }
 
-    /* ===== VALUE = MAIN DATA ===== */
     .value {
-      font-size: 2.4rem;
+      font-size: 2.6rem;
       font-weight: 800;
+      color: #ffffff;       /* SAME FONT COLOR */
     }
 
     /* ================= FOOTER ================= */
@@ -103,8 +104,8 @@
       width: 100%;
       text-align: center;
       font-size: 1.2rem;
-      opacity: 0.7;
-      padding: 15px 0 20px;
+      color: #475569;
+      padding: 18px 0 22px;
     }
   </style>
 </head>
@@ -123,45 +124,14 @@
 </header>
 
 <div class="dashboard">
-  <div class="card">
-    <div class="label">Temperature</div>
-    <div class="value" id="temp">-- °C</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Humidity</div>
-    <div class="value" id="humidity">-- %</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Wind Speed</div>
-    <div class="value" id="wind">-- m/s</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Pressure</div>
-    <div class="value" id="pressure">-- hPa</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Rain (Today)</div>
-    <div class="value" id="rain">-- mm</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Device Last Reading</div>
-    <div class="value" id="deviceTime">--</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Dashboard Fetch Time</div>
-    <div class="value" id="time">--</div>
-  </div>
-
-  <div class="card">
-    <div class="label">Current Time</div>
-    <div class="value" id="currentTime">--</div>
-  </div>
+  <div class="card"><div class="label">Temperature</div><div class="value" id="temp">-- °C</div></div>
+  <div class="card"><div class="label">Humidity</div><div class="value" id="humidity">-- %</div></div>
+  <div class="card"><div class="label">Wind Speed</div><div class="value" id="wind">-- m/s</div></div>
+  <div class="card"><div class="label">Pressure</div><div class="value" id="pressure">-- hPa</div></div>
+  <div class="card"><div class="label">Rain (Today)</div><div class="value" id="rain">-- mm</div></div>
+  <div class="card"><div class="label">Device Last Reading</div><div class="value" id="deviceTime">--</div></div>
+  <div class="card"><div class="label">Dashboard Fetch Time</div><div class="value" id="time">--</div></div>
+  <div class="card"><div class="label">Current Time</div><div class="value" id="currentTime">--</div></div>
 </div>
 
 <footer>
@@ -179,42 +149,26 @@
     try {
       const response = await fetch(URL);
       const data = await response.json();
-
       const device = data.find(dev => dev.macAddress === MAC_ADDRESS);
-      if (!device) throw new Error("Device not found");
+      if (!device) return;
 
       const d = device.lastData;
 
-      document.getElementById("temp").innerText =
-        ((d.tempf - 32) * 5 / 9).toFixed(1) + " °C";
-
-      document.getElementById("humidity").innerText = d.humidity + " %";
-      document.getElementById("wind").innerText =
-        (d.windspeedmph * 0.447).toFixed(1) + " m/s";
-      document.getElementById("pressure").innerText =
-        d.baromrelin + " hPa";
-      document.getElementById("rain").innerText =
-        (d.dailyrainin * 25.4).toFixed(1) + " mm";
-      document.getElementById("deviceTime").innerText =
-        new Date(d.dateutc).toLocaleString('en-GB');
-      document.getElementById("time").innerText =
-        new Date().toLocaleString('en-GB');
-
-    } catch (err) {
-      console.error("Weather fetch error:", err);
+      temp.innerText = ((d.tempf - 32) * 5 / 9).toFixed(1) + " °C";
+      humidity.innerText = d.humidity + " %";
+      wind.innerText = (d.windspeedmph * 0.447).toFixed(1) + " m/s";
+      pressure.innerText = d.baromrelin + " hPa";
+      rain.innerText = (d.dailyrainin * 25.4).toFixed(1) + " mm";
+      deviceTime.innerText = new Date(d.dateutc).toLocaleString('en-GB');
+      time.innerText = new Date().toLocaleString('en-GB');
+    } catch (e) {
+      console.error(e);
     }
   }
 
   loadWeather();
   setInterval(loadWeather, 60000);
-
-  function updateCurrentTime() {
-    document.getElementById("currentTime").innerText =
-      new Date().toLocaleString('en-GB');
-  }
-
-  updateCurrentTime();
-  setInterval(updateCurrentTime, 1000);
+  setInterval(() => currentTime.innerText = new Date().toLocaleString('en-GB'), 1000);
 </script>
 
 </body>
